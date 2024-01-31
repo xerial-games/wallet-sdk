@@ -1,0 +1,32 @@
+{
+  "name": "xerial-wallet-sdk",
+  "version": "1.0.0",
+  "description": "integrate your website with the xerial wallet",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xerial-games/wallet-sdk.git"
+  },
+  "keywords": [
+    "crypto",
+    "wallet",
+    "nfts",
+    "games",
+    "blockchain"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xerial-games/wallet-sdk/issues"
+  },
+  "homepage": "https://github.com/xerial-games/wallet-sdk#readme",
+  "dependencies": {
+    "ethers": "^5.7.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
