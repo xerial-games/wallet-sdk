@@ -15,16 +15,16 @@ class Xerial {
         this.projectId = projectId;
         this.chain = chain
         this.loginPopup = null;
-        this.walletAuthHost = production ? "https://auth.xerial.io" : "http://localhost:3000"
-        this.walletApiHost = production ? "https://wallet.xerial.io" : "http://localhost:3003"
+        this.walletAuthHost = production ? "https://wallet.xerial.io/auth" : "https://wallet.staging.xerial.io/auth"
+        this.walletApiHost = production ? "https://wallet.xerial.io/api" : "https://wallet.staging.xerial.io/api"
         this.resolveAuth = null
         this._user = null
     }
 
     auth() {
         const authUrl = `${this.walletAuthHost}?projectId=${this.projectId}`;
-        const width = 500;
-        const height = 500;
+        const width = 475;
+        const height = 560;
         const left = (window.innerWidth - width) / 2;
         const top = (window.innerHeight - height) / 2;
         this.loginPopup = window.open(authUrl, 'xerialAuthPopup', `width=${width}, height=${height}, left=${left}, top=${top}`);
