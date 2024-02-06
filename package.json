@@ -1,9 +1,15 @@
 {
   "name": "xerial-wallet-sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "integrate your website with the xerial wallet",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build": "tsup",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,16 +23,18 @@
     "games",
     "blockchain"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "Ignacio Piris",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/xerial-games/wallet-sdk/issues"
   },
-  "homepage": "https://github.com/xerial-games/wallet-sdk#readme",
+  "homepage": "https://xerial.io",
   "dependencies": {
     "ethers": "^5.7.2"
   },
   "devDependencies": {
+    "ts-node": "^10.9.2",
+    "tsup": "^8.0.1",
     "typescript": "^5.3.3"
   }
 }
