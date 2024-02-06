@@ -1,12 +1,12 @@
-# Xerial Wallet JavaScript SDK Documentation
+# Xerial Wallet JavaScript SDK Documentation 🤝
 
 ## Introduction
 
-Welcome to the documentation for the Xerial Wallet SDK for JavaScript. This SDK allows you to seamlessly integrate Xerial Wallet functionalities into your React or any other JavaScript front-end framework applications.
+Welcome to the `Xerial Wallet SDK` for `JavaScript` documentation. This SDK allows you to seamlessly integrate `Xerial Wallet` functionality into your `React` applications or any other `front-end JavaScript framework`.
 
 ## Installation
 
-To get started, install the SDK using npm:
+- To get started, install the SDK using npm:
 
 ```bash
 npm install xerial-wallet-sdk
@@ -14,7 +14,7 @@ npm install xerial-wallet-sdk
 
 ## Usage
 
-Initialize the Xerial Wallet SDK in your application:
+- Initialize the `Xerial Wallet SDK` in your application:
 
 ```javascript
 import Xerial from 'xerial-wallet-sdk';
@@ -25,7 +25,7 @@ const xerial = new Xerial({ projectId: 'your_project_id', chain: 'polygon' });
 
 ## Authentication
 
-To authenticate a user, use the auth method:
+- To authenticate a user, use the auth method:
 
 ```javascript
 xerial.auth().then(user => {
@@ -37,7 +37,7 @@ xerial.auth().then(user => {
 
 ## User Information
 
-Retrieve user information:
+- Retrieve user information:
 
 ```javascript
 xerial.user().then(user => {
@@ -49,7 +49,7 @@ xerial.user().then(user => {
 
 ## Token Balances
 
-Retrieve token balances:
+- Retrieve token balances:
 
 ```javascript
 xerial.tokens().then(balances => {
@@ -61,7 +61,7 @@ xerial.tokens().then(balances => {
 
 ## Native Currency Balance
 
-Retrieve native currency balance:
+- Retrieve native currency balance:
 
 ```javascript
 xerial.eth().then(balance => {
@@ -73,7 +73,7 @@ xerial.eth().then(balance => {
 
 ## Transaction
 
-Send a transaction:
+- Send a transaction:
 
 ```javascript
 const transaction = { /* Your transaction details */ };
@@ -87,7 +87,7 @@ xerial.sendTransaction(transaction).then(transactionHash => {
 
 ## Inventory (Polygon Only)
 
-Retrieve global inventory on the Polygon chain:
+- Retrieve global inventory on the `Polygon` chain:
 
 ```javascript
 xerial.inventory().then(inventory => {
@@ -97,12 +97,12 @@ xerial.inventory().then(inventory => {
 });
 ```
 
-## Support
+## Contributions ✨
 
-If you encounter any issues or have questions, please contact us at [ignaciopirisb@gmail.com](mailto:ignaciopirisb@gmail.com) or visit [xerial.io](https://xerial.io).
+- We appreciate any contribution. If you find a bug or have any suggestions, feel free to open an issue or submit a pull request on [GitHub](https://github.com/xerial-games/wallet-sdk).
 
-## Contributions
+- When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change. You can learn more about how you can contribute to this project in the [Contribution Guide](https://github.com/xerial-games/wallet-sdk/blob/develop/CONTRIBUTING.MD).
 
-We welcome contributions! If you find a bug or have a suggestion, feel free to open an issue or submit a pull request on [GitHub](https://github.com/xerial-games/wallet-sdk).
+- Thank you for using the Xerial Wallet SDK for JavaScript! 💫
 
-Thank you for using the Xerial Wallet SDK for JavaScript!
+Made with ❤️ by [Xerial Team](https://github.com/xerial-games)
