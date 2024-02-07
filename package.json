@@ -1,7 +1,7 @@
 {
   "name": "xerial-wallet-sdk",
   "version": "1.0.3",
-  "description": "integrate your website with the xerial wallet",
+  "description": "Integrate your website with the Xerial Wallet",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -21,9 +21,10 @@
     "wallet",
     "nfts",
     "games",
-    "blockchain"
+    "blockchain",
+    "web3"
   ],
-  "author": "Ignacio Piris",
+  "author": "Xerial Team",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/xerial-games/wallet-sdk/issues"
