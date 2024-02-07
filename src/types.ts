@@ -6,12 +6,7 @@ declare global {
 
 export type Chain = "polygon" | "telos";
 
-export type ResolverFunction = (user: User) => void;
-
-export interface User {
-    address: string;
-    custodial: boolean;
-}
+export type ResolverFunction = (user: any) => void;
 
 export interface Config {
     projectId: string;

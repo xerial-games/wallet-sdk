@@ -1,11 +1,10 @@
 import { ethers } from "ethers"
 import { Deferrable } from "ethers/lib/utils";
-import { Chain, ResolverFunction, User, Config } from "./types";
+import { Chain, ResolverFunction, Config } from "./types";
 
 class Xerial {
     projectId: string
     chain: Chain
-    private _user: User | null
     private loginPopup: Window | null
     private walletAuthHost: string
     private walletApiHost: string
@@ -18,7 +17,6 @@ class Xerial {
         this.walletAuthHost = production ? "https://wallet.xerial.io/auth" : "https://wallet.staging.xerial.io/auth"
         this.walletApiHost = production ? "https://wallet.xerial.io/api" : "https://wallet.staging.xerial.io/api"
         this.resolveAuth = null
-        this._user = null
     }
 
     auth() {
@@ -54,7 +52,6 @@ class Xerial {
     }
 
     async user() {
-        if (!this._user) {
             try {
                 const res = await fetch(`${this.walletApiHost}/user`, {
                     method: "GET", headers: this.getHeaders()
@@ -62,19 +59,15 @@ class Xerial {
                 if (res.status === 401) {
                     throw new Error("Not Authenticated");
                 }
-                const userInfo = await res.json()
-                const wallet = userInfo.wallets[0]
-                this._user = { address: wallet.custodial && this.chain === "polygon" ? wallet.smartAccount : wallet.address, custodial: wallet.custodial }
+                return res.json()
             } catch (error) {
                 throw error
             }
-        }
-        return this._user
     }
 
-    async tokens() {
+    async tokens(address: string) {
         try {
-            const res = await fetch(`${this.walletApiHost}/wallet/${this._user?.address}/${this.chain}/tokens`, {
+            const res = await fetch(`${this.walletApiHost}/wallet/${address}/${this.chain}/tokens`, {
                 method: "GET", headers: this.getHeaders()
             })
             const { balances } = await res.json()
@@ -84,9 +77,9 @@ class Xerial {
         }
     }
 
-    async eth() {
+    async eth(address: string) {
         try {
-            const res = await fetch(`${this.walletApiHost}/wallet/${this._user?.address}/${this.chain}/eth`, {
+            const res = await fetch(`${this.walletApiHost}/wallet/${address}/${this.chain}/eth`, {
                 method: "GET", headers: this.getHeaders()
             })
             const { balance } = await res.json()
@@ -96,12 +89,12 @@ class Xerial {
         }
     }
 
-    async inventory() {
+    async inventory(address: string) {
         if (this.chain !== "polygon") {
             throw new Error('Not supported chain');
         }
         try {
-            const res = await fetch(`${this.walletApiHost}/wallet/${this._user?.address}/${this.chain}/global-inventory`, {
+            const res = await fetch(`${this.walletApiHost}/wallet/${address}/${this.chain}/global-inventory`, {
                 method: "GET", headers: this.getHeaders()
             })
             return res.json()
@@ -110,10 +103,14 @@ class Xerial {
         }
     }
 
-    async sendTransaction(tx: Deferrable<ethers.providers.TransactionRequest>) {
+    async sendTransaction(tx: Deferrable<ethers.providers.TransactionRequest>, from: string) {
         try {
-            if (this._user?.custodial) {
-                const res = await fetch(`${this.walletApiHost}/wallet/${this._user.address}/${this.chain}/transaction`, {
+            const user = await this.user()
+            if (user?.wallets[0].address !== from || user?.wallets[0].smartAccount !== from) {
+                throw new Error("Unauthorized");
+            }
+            if (user?.wallets[0].custodial) {
+                const res = await fetch(`${this.walletApiHost}/wallet/${from}/${this.chain}/transaction`, {
                     method: "POST", headers: this.getHeaders(), body: JSON.stringify(tx)
                 })
                 if (res.status === 401) {
@@ -129,7 +126,7 @@ class Xerial {
                 const provider = new ethers.providers.Web3Provider(window.ethereum);
                 const signer = provider.getSigner();
                 const address = await signer.getAddress();
-                if (address !== this._user?.address) {
+                if (address !== from) {
                     throw new Error("Incorrect account")
                 }
                 const txInfo = await signer.sendTransaction(tx);
