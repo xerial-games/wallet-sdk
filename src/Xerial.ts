@@ -1,81 +1,132 @@
 import { ethers } from "ethers"
 import { Deferrable } from "ethers/lib/utils";
-import { Chain, ResolverFunction, User, Config } from "./types";
+import { Chain, ResolveAuth, RejectAuth, Config } from "./types";
 
 class Xerial {
     projectId: string
     chain: Chain
-    private _user: User | null
     private loginPopup: Window | null
     private walletAuthHost: string
     private walletApiHost: string
-    private resolveAuth: ResolverFunction | null
+    private resolveAuth: ResolveAuth | null
+    private rejectAuth: RejectAuth | null
 
-    constructor({ projectId, chain, production = false } : Config) {
+    constructor({ projectId, chain, production = false }: Config) {
         this.projectId = projectId;
         this.chain = chain
         this.loginPopup = null;
         this.walletAuthHost = production ? "https://wallet.xerial.io/auth" : "https://wallet.staging.xerial.io/auth"
         this.walletApiHost = production ? "https://wallet.xerial.io/api" : "https://wallet.staging.xerial.io/api"
         this.resolveAuth = null
-        this._user = null
+        this.rejectAuth = null
     }
 
     auth() {
-        const authUrl = `${this.walletAuthHost}?projectId=${this.projectId}`;
-        const width = 475;
-        const height = 560;
-        const left = (window.innerWidth - width) / 2;
-        const top = (window.innerHeight - height) / 2;
-        this.loginPopup = window.open(authUrl, 'xerialAuthPopup', `width=${width}, height=${height}, left=${left}, top=${top}`);
-        window.addEventListener('message', this.handleLogin.bind(this));
-        return new Promise((resolve) => {
+        const xerialTokens = localStorage.getItem("xerial")
+        if (xerialTokens && Date.parse(JSON.parse(xerialTokens).refresh.expires) > Date.now()) {
+            this.#refreshTokens(JSON.parse(xerialTokens).refresh.token)
+        } else {
+            const authUrl = `${this.walletAuthHost}?projectId=${this.projectId}`;
+            const width = 480;
+            const height = 565;
+            const left = (window.innerWidth - width) / 2;
+            const top = (window.innerHeight - height) / 2;
+            this.loginPopup = window.open(authUrl, 'xerialAuthPopup', `width=${width}, height=${height}, left=${left}, top=${top}`);
+            window.addEventListener('message', this.#handleLogin.bind(this));
+        }
+        return new Promise((resolve, reject) => {
             this.resolveAuth = resolve;
+            this.rejectAuth = reject;
         });
     }
 
-    async handleLogin(event: MessageEvent) {
+    async #handleLogin(event: MessageEvent) {
         if (event.source === this.loginPopup && event.data.access) {
-            localStorage.setItem("accessToken", event.data.access.token);
+            localStorage.setItem("xerial", JSON.stringify(event.data));
             this.loginPopup?.close();
-            window.removeEventListener('message', this.handleLogin);
+            window.removeEventListener('message', this.#handleLogin);
+            const user = await this.user()
+            if (user && this.resolveAuth) {
+                this.resolveAuth(user);
+            } else {
+                this.rejectAuth?.("Auth Failed")
+            }
+        }
+    }
+
+    async #refreshTokens(refreshToken: string) {
+        try {
+            const res = await fetch(`${this.walletApiHost}/auth/refresh-tokens`, {
+                method: "POST", headers: this.getHeaders(true), body: JSON.stringify({ refreshToken })
+            })
+            if (res.status === 401) {
+                localStorage.removeItem("xerial")
+                throw new Error;
+            }
+            const tokens = await res.json()
+            localStorage.setItem("xerial", JSON.stringify(tokens));
             const user = await this.user()
             if (user && this.resolveAuth) {
                 this.resolveAuth(user);
             }
+        } catch (error) {
+            this.rejectAuth?.("Auth Failed")
         }
+
     }
 
-    getHeaders() {
-        return {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("accessToken")}`
+    getHeaders(auth: boolean) {
+        const xerialTokens = localStorage.getItem("xerial")
+        const headers = new Headers()
+        headers.append("Content-Type", "application/json")
+        if (xerialTokens && auth) {
+            headers.append("Authorization", `Bearer ${JSON.parse(xerialTokens).access.token}`)
         }
+        return headers
     }
 
-    async user() {
-        if (!this._user) {
+    isAuth() {
+        const xerialTokens = localStorage.getItem("xerial")
+        if (xerialTokens) {
+            if (Date.parse(JSON.parse(xerialTokens).access.expires) > Date.now()) {
+                return true
+            }
+        }
+        return false
+    }
+
+    async logout() {
+        const xerialTokens = localStorage.getItem("xerial")
+        if (xerialTokens) {
             try {
-                const res = await fetch(`${this.walletApiHost}/user`, {
-                    method: "GET", headers: this.getHeaders()
+                await fetch(`${this.walletApiHost}/auth/logout`, {
+                    method: "POST", headers: this.getHeaders(false), body: JSON.stringify({ refreshToken: JSON.parse(xerialTokens).refresh.token })
                 })
-                if (res.status === 401) {
-                    throw new Error("Not Authenticated");
-                }
-                const userInfo = await res.json()
-                const wallet = userInfo.wallets[0]
-                this._user = { address: wallet.custodial && this.chain === "polygon" ? wallet.smartAccount : wallet.address, custodial: wallet.custodial }
+                localStorage.removeItem("xerial")
             } catch (error) {
                 throw error
             }
         }
-        return this._user
     }
 
-    async tokens() {
+    async user() {
         try {
-            const res = await fetch(`${this.walletApiHost}/wallet/${this._user?.address}/${this.chain}/tokens`, {
-                method: "GET", headers: this.getHeaders()
+            const res = await fetch(`${this.walletApiHost}/user`, {
+                method: "GET", headers: this.getHeaders(true)
+            })
+            if (res.status === 401) {
+                throw new Error("Not Authenticated");
+            }
+            return res.json()
+        } catch (error) {
+            throw error
+        }
+    }
+
+    async tokens(address: string) {
+        try {
+            const res = await fetch(`${this.walletApiHost}/wallet/${address}/${this.chain}/tokens`, {
+                method: "GET", headers: this.getHeaders(false)
             })
             const { balances } = await res.json()
             return balances
@@ -84,10 +135,10 @@ class Xerial {
         }
     }
 
-    async eth() {
+    async eth(address: string) {
         try {
-            const res = await fetch(`${this.walletApiHost}/wallet/${this._user?.address}/${this.chain}/eth`, {
-                method: "GET", headers: this.getHeaders()
+            const res = await fetch(`${this.walletApiHost}/wallet/${address}/${this.chain}/eth`, {
+                method: "GET", headers: this.getHeaders(false)
             })
             const { balance } = await res.json()
             return balance
@@ -96,13 +147,13 @@ class Xerial {
         }
     }
 
-    async inventory() {
+    async inventory(address: string) {
         if (this.chain !== "polygon") {
             throw new Error('Not supported chain');
         }
         try {
-            const res = await fetch(`${this.walletApiHost}/wallet/${this._user?.address}/${this.chain}/global-inventory`, {
-                method: "GET", headers: this.getHeaders()
+            const res = await fetch(`${this.walletApiHost}/wallet/${address}/${this.chain}/global-inventory`, {
+                method: "GET", headers: this.getHeaders(false)
             })
             return res.json()
         } catch (error) {
@@ -110,11 +161,15 @@ class Xerial {
         }
     }
 
-    async sendTransaction(tx: Deferrable<ethers.providers.TransactionRequest>) {
+    async sendTransaction(tx: Deferrable<ethers.providers.TransactionRequest>, from: string) {
         try {
-            if (this._user?.custodial) {
-                const res = await fetch(`${this.walletApiHost}/wallet/${this._user.address}/${this.chain}/transaction`, {
-                    method: "POST", headers: this.getHeaders(), body: JSON.stringify(tx)
+            const user = await this.user()
+            if (user?.wallets[0].address !== from || user?.wallets[0].smartAccount !== from) {
+                throw new Error("Unauthorized");
+            }
+            if (user?.wallets[0].custodial) {
+                const res = await fetch(`${this.walletApiHost}/wallet/${from}/${this.chain}/transaction`, {
+                    method: "POST", headers: this.getHeaders(true), body: JSON.stringify(tx)
                 })
                 if (res.status === 401) {
                     throw new Error("Not Authenticated");
@@ -129,7 +184,7 @@ class Xerial {
                 const provider = new ethers.providers.Web3Provider(window.ethereum);
                 const signer = provider.getSigner();
                 const address = await signer.getAddress();
-                if (address !== this._user?.address) {
+                if (address !== from) {
                     throw new Error("Incorrect account")
                 }
                 const txInfo = await signer.sendTransaction(tx);

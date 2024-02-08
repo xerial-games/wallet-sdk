@@ -21,9 +21,15 @@ import Xerial from 'xerial-wallet-sdk';
 
 const xerial = new Xerial({ projectId: 'your_project_id', chain: 'polygon' });
 ```
-**Note:** The Xerial Wallet SDK supports the Telos and Polygon chains.
+**Note:** The Xerial Wallet SDK supports Telos and Polygon chains.
 
 ## Authentication
+
+- To verify if a user is authenticated, use the isAuth method:
+
+```javascript
+const isAuth = xerial.isAuth() // Returns true or false
+```
 
 - To authenticate a user, use the auth method:
 
@@ -33,6 +39,12 @@ xerial.auth().then(user => {
 }).catch(error => {
   console.error('Authentication failed:', error);
 });
+```
+
+- To logout a user, use the logout method:
+
+```javascript
+await xerial.logout()
 ```
 
 ## User Information
@@ -49,10 +61,10 @@ xerial.user().then(user => {
 
 ## Token Balances
 
-- Retrieve token balances:
+- Retrieve token balances for specific address:
 
 ```javascript
-xerial.tokens().then(balances => {
+xerial.tokens(address).then(balances => {
   console.log('Token balances:', balances);
 }).catch(error => {
   console.error('Error fetching token balances:', error);
@@ -61,10 +73,10 @@ xerial.tokens().then(balances => {
 
 ## Native Currency Balance
 
-- Retrieve native currency balance:
+- Retrieve native currency balance for specific address:
 
 ```javascript
-xerial.eth().then(balance => {
+xerial.eth(address).then(balance => {
   console.log('Ethereum balance:', balance);
 }).catch(error => {
   console.error('Error fetching Ethereum balance:', error);
@@ -73,12 +85,12 @@ xerial.eth().then(balance => {
 
 ## Transaction
 
-- Send a transaction:
+- Send a transaction from specific address:
 
 ```javascript
 const transaction = { /* Your transaction details */ };
 
-xerial.sendTransaction(transaction).then(transactionHash => {
+xerial.sendTransaction(transaction, address).then(transactionHash => {
   console.log('Transaction sent. Hash:', transactionHash);
 }).catch(error => {
   console.error('Error sending transaction:', error);
@@ -87,15 +99,17 @@ xerial.sendTransaction(transaction).then(transactionHash => {
 
 ## Inventory (Polygon Only)
 
-- Retrieve global inventory on the `Polygon` chain:
+- Retrieve global inventory for specific address:
 
 ```javascript
-xerial.inventory().then(inventory => {
+xerial.inventory(address).then(inventory => {
   console.log('Global inventory on Polygon:', inventory);
 }).catch(error => {
   console.error('Error fetching inventory:', error);
 });
 ```
+
+**Note:** Currently supported only on Polygon chain.
 
 ## Contributions ✨
 
