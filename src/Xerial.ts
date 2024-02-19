@@ -1,6 +1,6 @@
 import { ethers } from "ethers"
 import { Deferrable } from "ethers/lib/utils";
-import { Chain, ResolveAuth, RejectAuth, Config } from "./types";
+import { Chain, ResolveAuth, RejectAuth, Config, User } from "./types";
 
 class Xerial {
     projectId: string
@@ -24,7 +24,7 @@ class Xerial {
     auth() {
         const xerialTokens = localStorage.getItem("xerial")
         if (xerialTokens && Date.parse(JSON.parse(xerialTokens).refresh.expires) > Date.now()) {
-            this.#refreshTokens(JSON.parse(xerialTokens).refresh.token)
+            this.refreshTokens(JSON.parse(xerialTokens).refresh.token)
         } else {
             const authUrl = `${this.walletAuthHost}?projectId=${this.projectId}`;
             const width = 480;
@@ -32,7 +32,7 @@ class Xerial {
             const left = (window.innerWidth - width) / 2;
             const top = (window.innerHeight - height) / 2;
             this.loginPopup = window.open(authUrl, 'xerialAuthPopup', `width=${width}, height=${height}, left=${left}, top=${top}`);
-            window.addEventListener('message', this.#handleLogin.bind(this));
+            window.addEventListener('message', this.handleLogin.bind(this));
         }
         return new Promise((resolve, reject) => {
             this.resolveAuth = resolve;
@@ -40,21 +40,21 @@ class Xerial {
         });
     }
 
-    async #handleLogin(event: MessageEvent) {
+    private async handleLogin(event: MessageEvent) {
         if (event.source === this.loginPopup && event.data.access) {
             localStorage.setItem("xerial", JSON.stringify(event.data));
             this.loginPopup?.close();
-            window.removeEventListener('message', this.#handleLogin);
+            window.removeEventListener('message', this.handleLogin);
             const user = await this.user()
-            if (user && this.resolveAuth) {
-                this.resolveAuth(user);
+            if (user) {
+                this.resolveAuth?.(user);
             } else {
                 this.rejectAuth?.("Auth Failed")
             }
         }
     }
 
-    async #refreshTokens(refreshToken: string) {
+    private async refreshTokens(refreshToken: string) {
         try {
             const res = await fetch(`${this.walletApiHost}/auth/refresh-tokens`, {
                 method: "POST", headers: this.getHeaders(true), body: JSON.stringify({ refreshToken })
@@ -66,8 +66,8 @@ class Xerial {
             const tokens = await res.json()
             localStorage.setItem("xerial", JSON.stringify(tokens));
             const user = await this.user()
-            if (user && this.resolveAuth) {
-                this.resolveAuth(user);
+            if (user) {
+                this.resolveAuth?.(user);
             }
         } catch (error) {
             this.rejectAuth?.("Auth Failed")
@@ -109,7 +109,7 @@ class Xerial {
         }
     }
 
-    async user() {
+    async user(): Promise<User> {
         try {
             const res = await fetch(`${this.walletApiHost}/user`, {
                 method: "GET", headers: this.getHeaders(true)
