@@ -1,8 +1,6 @@
-# Xerial Wallet SDK Documentation 🤝
-
 ## Introduction
 
-Welcome to the `Xerial Wallet SDK` for `JavaScript` documentation. This SDK allows you to seamlessly integrate `Xerial Wallet` functionality into your `React` applications or any other `front-end JavaScript framework`.
+Welcome to the `Xerial Wallet SDK` for `JavaScript`. This SDK allows you to seamlessly integrate `Xerial Wallet` functionality into your `React` applications or any other `front-end JavaScript framework`.
 
 ## Installation
 
