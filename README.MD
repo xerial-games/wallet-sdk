@@ -1,4 +1,4 @@
-# Xerial Wallet JavaScript SDK Documentation 🤝
+# Xerial Wallet SDK Documentation 🤝
 
 ## Introduction
 
@@ -115,8 +115,8 @@ xerial.inventory(address).then(inventory => {
 
 - We appreciate any contribution. If you find a bug or have any suggestions, feel free to open an issue or submit a pull request on [GitHub](https://github.com/xerial-games/wallet-sdk).
 
-- When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change. You can learn more about how you can contribute to this project in the [Contribution Guide](https://github.com/xerial-games/wallet-sdk/blob/develop/CONTRIBUTING.MD).
+- When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change. You can learn more about how you can contribute to this project in the [Contribution Guide](docs/CONTRIBUTING.md).
 
-- Thank you for using the Xerial Wallet SDK for JavaScript! 💫
+Thank you for using the Xerial Wallet SDK for JavaScript! 💫
 
 Made with ❤️ by [Xerial Team](https://github.com/xerial-games)
