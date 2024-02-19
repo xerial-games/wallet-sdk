@@ -12,7 +12,7 @@ interface Wallet {
 
 export interface User {
     identifier: string,
-    nane?: string
+    name?: string
     wallets: Wallet[]
 }
 
