@@ -1,9 +1,3 @@
-declare global {
-    interface Window {
-        ethereum?: any;
-    }
-}
-
 interface Wallet {
     address: string,
     smartAccount?: string,
