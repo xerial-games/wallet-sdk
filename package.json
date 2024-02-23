@@ -22,7 +22,8 @@
     "nfts",
     "games",
     "blockchain",
-    "web3"
+    "web3",
+    "xerial"
   ],
   "author": "Xerial Team",
   "license": "MIT",
@@ -30,12 +31,12 @@
     "url": "https://github.com/xerial-games/wallet-sdk/issues"
   },
   "homepage": "https://xerial.io",
-  "dependencies": {
-    "ethers": "^5.7.2"
-  },
   "devDependencies": {
     "ts-node": "^10.9.2",
     "tsup": "^8.0.1",
     "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "ethers": "^5.7.2"
   }
 }

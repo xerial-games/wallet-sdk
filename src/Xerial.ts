@@ -1,6 +1,5 @@
-import { ethers } from "ethers"
-import { Deferrable } from "ethers/lib/utils";
 import { Chain, ResolveAuth, RejectAuth, Config, User } from "./types";
+import { UnsignedTransaction } from 'ethers';
 
 class Xerial {
     projectId: string
@@ -161,10 +160,10 @@ class Xerial {
         }
     }
 
-    async sendTransaction(tx: Deferrable<ethers.providers.TransactionRequest>, from: string) {
+    async sendTransaction(tx: UnsignedTransaction, from: string) {
         try {
             const user = await this.user()
-            if (user?.wallets[0].address !== from || user?.wallets[0].smartAccount !== from) {
+            if (user?.wallets[0].address !== from && user?.wallets[0].smartAccount !== from) {
                 throw new Error("Unauthorized");
             }
             if (user?.wallets[0].custodial) {
@@ -177,19 +176,7 @@ class Xerial {
                 const { transactionHash } = await res.json()
                 return transactionHash
             } else {
-                if (!window.ethereum) {
-                    throw new Error("Metamask is not installed")
-                }
-                await window.ethereum.request({ method: 'eth_requestAccounts' });
-                const provider = new ethers.providers.Web3Provider(window.ethereum);
-                const signer = provider.getSigner();
-                const address = await signer.getAddress();
-                if (address !== from) {
-                    throw new Error("Incorrect account")
-                }
-                const txInfo = await signer.sendTransaction(tx);
-                await txInfo.wait()
-                return txInfo.hash
+                throw new Error("Metamask Wallet");
             }
         } catch (error) {
             throw error
